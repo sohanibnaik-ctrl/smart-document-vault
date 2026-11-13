@@ -221,3 +221,5 @@ __marimo__/
 
 vault/*.enc
 logs/audit_log.json
+
+demo_backup/
