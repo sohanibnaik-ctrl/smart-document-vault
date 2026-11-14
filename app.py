@@ -6,6 +6,7 @@ import streamlit as st
 
 import vault
 import integrity   # teammate's module
+import demo_tools
 
 st.set_page_config(page_title="DocVault", page_icon="🔒")
 
@@ -15,7 +16,7 @@ NOT_READY = ("integrity.py is not finished yet. Merge your teammate's work "
 
 # ---------- Sidebar ----------
 st.sidebar.markdown("## 🔒 DocVault")
-page = st.sidebar.radio("Go to", ["Upload", "My Files", "Verify Vault"],
+page = st.sidebar.radio("Go to", ["Upload", "My Files", "Verify Vault", "Demo Tools"],
                         label_visibility="collapsed")
 st.sidebar.caption("AES-256-GCM | scrypt")
 
@@ -153,8 +154,43 @@ elif page == "My Files":
 
 
 # ---------- Page 3: Verify Vault ----------
-else:
+elif page == "Verify Vault":
     st.header("Vault integrity check")
     st.caption("Checks the audit log chain and every file against its logged hash.")
     if st.button("Run full verification", type="primary"):
         run_verification()
+        
+else:
+    st.header("Demo tools")
+    st.caption("For demonstrations: create sample files and simulate attacks on the vault.")
+    st.info(f"All sample files use the password: {demo_tools.DEMO_PASSWORD}")
+
+    if st.button("Load sample files", type="primary"):
+        added = demo_tools.load_samples()
+        st.success(f"Added {len(added)} sample files." if added
+                   else "The sample files are already in the vault.")
+
+    st.subheader("Simulate an attack")
+    files = vault.list_files()
+    target = st.selectbox("Choose a file to attack", files) if files else None
+
+    a1, a2, a3, a4 = st.columns(4)
+    b1, b2 = st.columns(2)
+    try:
+        if a1.button("Flip one byte") and target:
+            st.warning(demo_tools.flip(target))
+        if a2.button("Replace file") and target:
+            st.warning(demo_tools.replace(target))
+        if a3.button("Delete file") and target:
+            st.warning(demo_tools.delete(target))
+        if a4.button("Edit audit log"):
+            st.warning(demo_tools.editlog())
+        if b1.button("Restore everything"):
+            st.success(demo_tools.restore())
+        if b2.button("Empty the vault"):
+            st.success(demo_tools.reset_all())
+    except ValueError as e:
+        st.error(str(e))
+    st.caption("After an attack, open Verify Vault and run the check.")
+        
+
